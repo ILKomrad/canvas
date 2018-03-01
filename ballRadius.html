@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+
+<script type="text/javascript">
+function Ball() {
+  this.canvas = document.getElementById('myCanvas');
+  this.ctx = this.canvas.getContext('2d');
+  this.canvas.width = document.body.clientWidth;
+  this.canvas.height = document.body.clientHeight;
+  this.balls = [];
+  this.render();
+}
+
+Ball.prototype.addBall = function() {
+  this.balls.push(this.createBall());
+}
+
+Ball.prototype.rand = function(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+Ball.prototype.createBall = function() {
+  var th = this;
+
+  return {
+    x: th.canvas.width / 2,
+    y: th.canvas.height / 2,
+    r: 20,
+    initialR: 20,
+    dR: 0,
+    dRS: 0.01,
+    draw: function(ctx) {
+      this.dR += this.dRS;
+      this.r = this.initialR + 100 * Math.abs(Math.sin(this.dR));
+     // console.log( this.r )
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, 0);
+      ctx.fill();
+    }
+  }
+}
+
+Ball.prototype.render = function() {
+  var th = this;
+
+  for (var i = 0; i < 1; i++) {
+    th.addBall();
+  }
+
+  function r() {
+    th.ctx.clearRect(0, 0, th.canvas.width, th.canvas.height);
+    th.balls.map(function(b) {
+      b.draw(th.ctx);
+    });
+
+    requestAnimationFrame(r);
+  }
+
+  r();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var b = new Ball();
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+
+<script type="text/javascript">
+function Triangles() {
+  this.canvas = document.getElementById('myCanvas');
+  this.ctx = this.canvas.getContext('2d');
+  this.canvas.width = document.body.clientWidth;
+  this.canvas.height = document.body.clientHeight;
+  this.triangles = [];
+  this.render();
+}
+
+Triangles.prototype.addTriangle = function() {
+  this.triangles.push(this.createTriangle());
+}
+
+Triangles.prototype.rand = function(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+Triangles.prototype.createTriangle = function() {
+  var th = this,
+      x = -100 * Math.cos(Math.PI / 3),
+      y = (100 * Math.sin(Math.PI / 3)) / 2,
+      _tt = 0.5,
+      di = 'up',
+      center = {
+        x: 0,
+        y: 0
+      }
+
+  return {
+    side: 100,
+    x: x,
+    y: y,
+    inititalScale: 0,
+    scaleStep: 0.01,
+    rgba: [Math.round(th.rand(0, 999)), Math.round(th.rand(0, 999)), Math.round(th.rand(0, 999))],
+    draw: function(ctx) {
+      // this.inititalScale += this.scaleStep;
+      // var scale = Math.abs(Math.sin(this.inititalScale));
+      
+      if (di == 'up') {
+        if (_tt <= 1) {
+          _tt += 0.01;
+        } else {
+          di = 'down';
+        }
+      }
+
+      if (di == 'down') {
+        if (_tt >= 0.5) {
+          _tt -= 0.01;
+        } else {
+          di = 'up';
+        }
+      }
+
+      ctx.save();
+      ctx.translate(200, 200);
+      ctx.scale(_tt, _tt)
+      ctx.beginPath();
+      ctx.lineWidth = 10;
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.x + this.side * Math.cos(Math.PI / 3), this.y - (this.side * Math.sin(Math.PI / 3)));
+      ctx.lineTo(this.x + this.side, this.y);
+      ctx.fill();
+      ctx.closePath();
+      ctx.restore();
+    }
+  }
+}
+
+Triangles.prototype.render = function() {
+  var th = this;
+
+  for (var i = 0; i < 1; i++) {
+    th.addTriangle();
+  }
+
+  function r() {
+    th.ctx.clearRect(0, 0, th.canvas.width, th.canvas.height);
+    th.triangles.map(function(t, i) {
+      t.draw(th.ctx);
+    });
+
+    requestAnimationFrame(r);
+  }
+
+  r();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var t = new Triangles();
+})
+</script>
+</body>
+</html>

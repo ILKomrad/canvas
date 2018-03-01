@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script type="text/javascript">
+var canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext("2d"),
+        keyword = "FRESH",
+        imageData,
+        density = 2,
+        mouse = {x: 0, y: 0},
+        hovered = false,
+        colors = ["0,120,232", "42,42,42", "30,140,255", "68,157,68", "0,235,149", "0,235,249", "166,166,249"],
+        minDist = 20,
+        bounceFactor = 0.7;
+
+var W = window.innerWidth,
+        H = window.innerHeight;
+
+canvas.width = W;
+canvas.height = H;
+
+function S() {
+    this.dots = [];
+    this.drawText();
+    this.setPos();
+    this.update();
+    window.addEventListener('mousemove', function(e) {
+      mouse.x = e.pageX;
+      mouse.y = e.pageY;
+    });
+}
+
+S.prototype.rand = function(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+S.prototype.checkMouse = function(obj) {
+  var a = mouse.x - obj.x,
+      b = mouse.y - obj.y,
+      c = Math.sqrt(a * a + b * b),
+      radius = 100;
+
+  if (radius >= c) {
+    obj.mouseTouch = true;
+    obj.mouseAngleX = a / c;
+    obj.mouseAngleY = b / c;
+  } 
+}
+
+S.prototype.drawText = function() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#000000";
+    ctx.fontWeight = 'lighter';
+    ctx.font = "200px 'Arial', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(keyword, W/2, H/2);
+}
+
+S.prototype.setPos = function() {
+    var imageData = ctx.getImageData(0, 0, W, W);
+    var data = imageData.data;
+    var s = 0;
+    var th = this;
+    
+    for (var i = 0; i < imageData.height; i += density) {
+        for (var j = 0; j < imageData.width; j += density) {
+            
+            var color = data[((j * ( imageData.width * 4)) + (i * 4)) - 1];
+            
+            if (color == 255) {
+                th.dots.push(th.createDot(ctx));
+                th.dots[th.dots.length - 1].setPosition(i, j);
+            }
+        }
+    }
+}
+
+S.prototype.outCheck = function(obj) {
+  if ((obj.x < 0) || (obj.x > canvas.width) || (obj.y < 0) || (obj.y > canvas.height)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+S.prototype.createDot = function(ctx) {
+  var th = this,
+      _color = colors[Math.round(th.rand(0, (colors.length - 1)))],
+      _a = 1,
+      _alpha = _a;
+
+  return {
+      x: th.rand(0, canvas.width),
+      y: th.rand(0, canvas.height),
+      finishX: 0,
+      finishY: 0,
+      mouseAngleX: null,
+      mouseAngleY: null,
+      out: false,
+      r: 1,
+      mouseTouch: false,
+      setPosition: function(x, y) {
+          this.finishX = x;
+          this.finishY = y;
+      },
+      draw: function() {
+          ctx.save();
+          var _x = this.finishX - this.x,
+              _y = this.finishY - this.y,
+              _z = Math.sqrt(_x * _x + _y * _y),
+              _deltaX = (_x / _z) * (_z / 30),
+              _deltaY = (_y / _z) * (_z / 30);
+
+          if (this.out) {
+            this.mouseTouch = false;
+            this.out = false;
+          }
+
+          if (this.mouseTouch) {
+            _deltaX = -1 * this.mouseAngleX * 10;
+            _deltaY = -1 * this.mouseAngleY * 10;
+          } 
+
+          ctx.globalAlpha = _alpha;
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(' + _color + ', ' + _a + ')';
+
+          this.x += _deltaX;
+          this.y += _deltaY;
+          
+          ctx.arc(this.x, this.y, 1, 2 * Math.PI, false);
+          ctx.fill();
+          ctx.restore();
+      }
+  }
+}
+
+S.prototype.update = function() {
+    var th = this;
+
+    function g() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (var i = 0; i < th.dots.length; i++) {
+            th.checkMouse(th.dots[i]);
+            var check = th.outCheck(th.dots[i]);
+
+            if (check) {
+              th.dots[i].out = true;
+            } 
+
+            th.dots[i].draw();
+        }
+
+        requestAnimationFrame(g);
+    }
+
+    g();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var f = new S();
+})
+</script>
+</body>
+</html>

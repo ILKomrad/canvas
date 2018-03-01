@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script type="text/javascript">
+var canvas = document.querySelector('#canvas'),
+    ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function T() {
+  this.triangles = [];
+  this.render();
+}
+
+T.prototype.rand = function(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+T.prototype.addTriangle = function() {
+  this.triangles.push(this.createTriangle());
+}
+
+T.prototype.createTriangle = function() {
+  var r = 60,
+      x = this.rand(r, canvas.width - r),
+      y = this.rand(r, canvas.height - r),
+      th = this;
+
+  return {
+    initialX: x,
+    initialY: y,
+    x: 0,
+    y: 0,
+    dx: th.rand(0, 4),
+    coef: 0,
+    coefStep: th.rand(0.01, 0.05),
+    draw: function() {
+      var _scale = Math.sin(this.coef);
+      ctx.save();
+      ctx.translate(this.initialX, this.initialY);
+      //ctx.translate(this.x, this.y);
+      ctx.scale(_scale, _scale);
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 2 * Math.PI, false);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
+T.prototype.update = function() {
+  this.triangles.forEach(function(t) {
+    //t.x += t.dx;
+    t.coef += t.coefStep;
+  });
+}
+
+T.prototype.render = function() {
+  var th = this;
+
+  for (var i = 0; i < 4; i++) {
+    this.addTriangle();
+  }
+
+  function s() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    th.update();
+
+    th.triangles.forEach(function(c) {
+      c.draw();
+    })
+
+    requestAnimationFrame(s);
+  }
+
+  s();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var b = new T();
+})
+</script>
+</body>
+</html>

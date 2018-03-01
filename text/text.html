@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script type="text/javascript">
+var canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext("2d"),
+        keyword = "FRESH",
+        imageData,
+        density = 1,
+        mouse = {},
+        hovered = false,
+        colors = ["0,120,232", "8,200,255", "30,140,255"],
+        minDist = 20,
+        bounceFactor = 0.7;
+
+var W = window.innerWidth,
+        H = window.innerHeight;
+
+canvas.width = W;
+canvas.height = H;
+
+function S() {
+    this.dots = [];
+    this.drawText();
+    this.setPos();
+    this.update();
+}
+
+S.prototype.drawText = function() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#000000";
+    ctx.font = "100px 'Arial', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(keyword, W/2, H/2);
+}
+
+S.prototype.setPos = function() {
+    var imageData = ctx.getImageData(0, 0, W, W);
+    var data = imageData.data;
+    var s = 0;
+    var th = this;
+    
+    // Iterate each row and column
+    for (var i = 0; i < imageData.height; i += density) {
+        for (var j = 0; j < imageData.width; j += density) {
+            
+            var color = data[((j * ( imageData.width * 4)) + (i * 4)) - 1];
+            
+            if (color == 255) {
+                th.dots.push(th.createDot(ctx));
+                th.dots[th.dots.length - 1].setPosition(i, j);
+            }
+        }
+    }
+}
+
+S.prototype.createDot = function(ctx) {
+    return {
+        x: 0,
+        y: 0,
+        setPosition: function(x, y) {
+            this.x = x;
+            this.y = y;
+        },
+        draw: function() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 1, 2 * Math.PI, false);
+            ctx.fill();
+        }
+    }
+}
+
+S.prototype.update = function() {
+    var th = this;
+
+    function g() {
+        ctx.clearRect(0, 0, W, H);
+
+        for (var i = 0; i < th.dots.length; i++) {
+            th.dots[i].draw();
+        }
+
+        requestAnimationFrame(g);
+    }
+
+    g();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var f = new S();
+})
+</script>
+</body>
+</html>

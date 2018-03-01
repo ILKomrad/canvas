@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CH5EX9: Moving In A Circle</title>
+<style type="text/css">
+   body, html {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+   }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script type="text/javascript">
+var canvas = document.querySelector('#canvas'),
+    ctx = canvas.getContext('2d'),
+    mouse = {x: 0, y: 0};
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+mouse.x = canvas.width / 2;
+mouse.y = canvas.height / 2;
+
+function T() {
+  this.dots = [];
+  this.render();
+
+  window.addEventListener('mousemove', function(e) {
+    mouse.x = e.pageX;
+    mouse.y = e.pageY;
+  })
+}
+
+T.prototype.rand = function(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+T.prototype.addDot = function(mouse) {
+  var d = this.createDot(mouse);
+  this.dots.push(d);
+}
+
+T.prototype.createDot = function(mouse) {
+  var th = this,
+  _coef = [-1, 1];
+
+  return {
+    x: th.rand(0, canvas.width),
+    y: th.rand(0, canvas.height),
+    dx: th.rand(0.1, .6),
+    dy: th.rand(0.1, 1.5),
+    isMouse: mouse,
+    coef: _coef[Math.floor(Math.random()*2)],
+    r: 2,
+    draw: function(ctx) {
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(179, 177, 179, .2)';
+      ctx.arc(this.x, this.y, this.r, 2 * Math.PI, false);
+      ctx.fill();
+    }
+  }
+}
+
+T.prototype.outCheck = function(o) {
+  if ((o.x <= 0) || (o.x >= canvas.width) || (o.y <= 0) || (o.y >= canvas.height)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+T.prototype.animation = function() {
+  var th = this,
+      a = [];
+  
+  this.dots.forEach(function(d) {
+    if (!th.outCheck(d) && !d.isMouse) {
+      d.x += d.dx * d.coef;
+      d.y += d.dy * d.coef;
+
+      a.push(d);
+    } else if (d.isMouse) {
+      d.x = mouse.x;
+      d.y = mouse.y;
+      a.push(d);
+    }
+  })
+
+  this.dots = a;
+}
+
+T.prototype.renderLine = function() {
+  var th = this;
+
+  for (var z = 0; z < this.dots.length; z++) {
+    for (var t = z + 1; t < this.dots.length; t++) {
+      if ((th.getDist(this.dots[z], this.dots[t]) / 200) < 1) {
+        ctx.beginPath();
+        
+        if (this.dots[t].isMouse || this.dots[z].isMouse) {
+          ctx.strokeStyle = 'rgba(167, 210, 255, .2)';
+        } else {
+          ctx.strokeStyle = 'rgba(226, 224, 226, .4)';
+        }
+
+        ctx.moveTo(this.dots[z].x, this.dots[z].y);
+        ctx.lineTo(this.dots[t].x, this.dots[t].y);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+      }
+    }
+  }
+}
+
+T.prototype.getDist = function(d1, d2) {
+  var a = Math.abs(d1.x - d2.x),
+      b = Math.abs(d1.y - d2.y),
+      c = Math.sqrt(a * a + b * b);
+  
+  return c;
+}
+
+T.prototype.render = function() {
+  var th = this;
+
+  th.addDot(true);
+  function r() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    th.animation();
+    th.renderLine();
+
+    if (th.dots.length < 55) {
+      th.addDot(false);
+    }
+
+    for (var i = 0; i < th.dots.length; i++) {
+      th.dots[i].draw(ctx);
+    }
+
+    requestAnimationFrame(r);
+  }
+
+  r();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var b = new T();
+})
+</script>
+</body>
+</html>
